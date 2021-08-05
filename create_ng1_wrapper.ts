@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ComponentFactoryResolver, Injector, Type} from '@angular/core';
-import {NgElementConfig} from '@angular/elements';
+import { ComponentFactoryResolver, Injector, Type } from '@angular/core';
+import { NgElementConfig } from '@angular/elements';
 
 /**
  * Available values for locals use in AngularJS output expressions.
@@ -43,15 +43,17 @@ interface AngularJSLocals {
  *  2. AngularJS isn't aware of events fired by custom elements.
  */
 export function createNg1Wrapper(
-    customElementSelector: string,
-    component: Type<{}>,
-    config: NgElementConfig,
-    ): angular.IComponentOptions {
-  const propertyInputs = getComponentInputs(component, config.injector)
-                             .map(({propName}) => propName);
+  customElementSelector: string,
+  component: Type<{}>,
+  config: NgElementConfig
+): angular.IComponentOptions {
+  const propertyInputs = getComponentInputs(component, config.injector).map(
+    ({ propName }) => propName
+  );
 
-  const propertyOutputs = getComponentOutputs(component, config.injector)
-                              .map(({propName}) => propName);
+  const propertyOutputs = getComponentOutputs(component, config.injector).map(
+    ({ propName }) => propName
+  );
 
   /**
    * Creates a controller for an AngularJS component. This is nested
@@ -65,17 +67,20 @@ export function createNg1Wrapper(
     private readonly eventListeners = new Map<string, EventListener>();
 
     constructor(
-        $element: JQuery,
-        private readonly $rootScope: angular.IRootScopeService,
+      $element: JQuery,
+      private readonly $rootScope: angular.IRootScopeService
     ) {
       // By default, custom elements are inline elements. This changes
       // it to something more expected.
       $element.css('display', 'inline-block');
 
-      this.customElement =
-          ($element as any as HTMLElement[])[0].querySelector<HTMLElement>(customElementSelector)!;
+      this.customElement = (
+        $element as any as HTMLElement[]
+      )[0].querySelector<HTMLElement>(customElementSelector)!;
       if (!this.customElement) {
-        throw new Error(`No custom element (${customElementSelector}) found.  ¯\_(ツ)_/¯`);
+        throw new Error(
+          `No custom element (${customElementSelector}) found.  ¯\_(ツ)_/¯`
+        );
       }
     }
 
@@ -104,7 +109,7 @@ export function createNg1Wrapper(
      */
     private createEventListener(methodName: string): EventListener {
       return (e: Event) => {
-        const locals: AngularJSLocals = {$event: e};
+        const locals: AngularJSLocals = { $event: e };
 
         if (isCustomEvent(e)) {
           locals.detail = e.detail;
@@ -119,7 +124,7 @@ export function createNg1Wrapper(
       };
     }
   }
-  Ng1WrapperController.$inject= ['$element', '$rootScope'];
+  Ng1WrapperController.$inject = ['$element', '$rootScope'];
 
   // Add getters and setters to the prototype for each property input.
   // This sets the property on the custom element whenever the AngularJS
@@ -137,7 +142,7 @@ export function createNg1Wrapper(
     });
   }
 
-  const bindings: {[index: string]: string} = {};
+  const bindings: { [index: string]: string } = {};
   for (const input of propertyInputs) {
     // Optionality cannot be enforced. Therefore, everything is optional
     // and all error checking should be handled by the Angular component.
@@ -164,12 +169,15 @@ export function createNg1Wrapper(
  * factory where the inputs are defined. Stolen from:
  * https://github.com/angular/angular/blob/95993e1dd523cff96ebc2b42beb1e75dc95ca049/packages/elements/src/utils.ts#L124
  */
-function getComponentInputs(component: Type<{}>, injector: Injector):
-    Array<{propName: string, templateName: string}> {
-  const componentFactoryResolver: ComponentFactoryResolver =
-      injector.get(ComponentFactoryResolver);
+function getComponentInputs(
+  component: Type<{}>,
+  injector: Injector
+): Array<{ propName: string; templateName: string }> {
+  const componentFactoryResolver: ComponentFactoryResolver = injector.get(
+    ComponentFactoryResolver
+  );
   const componentFactory =
-      componentFactoryResolver.resolveComponentFactory(component);
+    componentFactoryResolver.resolveComponentFactory(component);
   return componentFactory.inputs;
 }
 
@@ -177,17 +185,19 @@ function getComponentInputs(component: Type<{}>, injector: Injector):
  * Gets a component's set of outputs. Uses the injector to get the component
  * factory where the outputs are defined.
  */
-function getComponentOutputs(component: Type<{}>, injector: Injector):
-    Array<{propName: string, templateName: string}> {
-  const componentFactoryResolver: ComponentFactoryResolver =
-      injector.get(ComponentFactoryResolver);
+function getComponentOutputs(
+  component: Type<{}>,
+  injector: Injector
+): Array<{ propName: string; templateName: string }> {
+  const componentFactoryResolver: ComponentFactoryResolver = injector.get(
+    ComponentFactoryResolver
+  );
   const componentFactory =
-      componentFactoryResolver.resolveComponentFactory(component);
+    componentFactoryResolver.resolveComponentFactory(component);
   return componentFactory.outputs;
 }
 
 /** Returns whether an Event is a CustomEvent with a details field. */
-function isCustomEvent(e: Event|CustomEvent): e is CustomEvent {
+function isCustomEvent(e: Event | CustomEvent): e is CustomEvent {
   return (e as CustomEvent).detail !== undefined;
 }
-
